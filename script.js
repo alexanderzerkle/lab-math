@@ -38,19 +38,25 @@ function showProblem() {
 async function loadProblems() {
   const response = await fetch("problems.csv");
   const text = await response.text();
-
   const lines = text.trim().split("\n");
 
-  problems = lines
-    .slice(1) // skip header row
-    .map(line => {
-      const [question, answer] = line.split(",");
+  problems = lines.slice(1).map(line => {
+    // Find the last comma not inside quotes
+    let inQuotes = false;
+    let lastCommaIndex = -1;
+    for (let i = line.length - 1; i >= 0; i--) {
+      if (line[i] === '"') inQuotes = !inQuotes;
+      if (line[i] === ',' && !inQuotes) {
+        lastCommaIndex = i;
+        break;
+      }
+    }
+    
+    const question = line.substring(0, lastCommaIndex).replace(/^"|"$/g, '').trim();
+    const answer = Number(line.substring(lastCommaIndex + 1).trim());
 
-      return {
-        question: question.trim(),
-        answer: Number(answer.trim())
-      };
-    });
+    return { question, answer };
+  });
 
   showProblem();
 }
