@@ -1,0 +1,103 @@
+﻿question,answer
+"How many significant figures are there in the number 23,400?",3
+You’ve counted exactly 500 colonies on your plate. Express this number in scientific notation using the correct number of significant figures.,5.00×10^2
+How many significant figures are in the measurement 0.0050 g?,2
+"Express 15,000 in scientific notation.",1.5×10^4
+How many significant figures are in the number 1.020?,4
+Write 0.0003 in scientific notation.,3×10^−4
+Convert 4.5×10^3 into standard notation.,"4,500"
+Round 12.345 to three significant figures.,12.3
+"How many significant figures are in the number 1,000,001?",7
+Express 0.000025 in scientific notation.,2.5×10^−5
+How many significant figures are in 100.0 mL?,4
+Convert 6.0×10^−2 to standard notation.,0.06
+I added 188.0 μL of selection drug to 9.0 mL of media. What is my final volume in scientific notation (w/ correct significant figures)?,9.2 ×10^0 mL
+I have 9.0 mL of 0.500M NaOH. How many moles of OH- ions do I have (w/ correct significant figures)?,4.5 ×10^-3 mol
+"How many milliliters are there in 16,000 μL?",16 mL
+How many microliters are there in 0.6 mL?,600 μL
+How many kilograms is 1×10^3 g?,1 kg
+How many kilograms is 1×10^3 mg?,0.001 kg
+How many micrograms are there in 4800 ng?,4.8 μg
+Convert 5 L to mL.,"5,000 mL"
+Convert 250 μL to mL.,0.25 mL
+How many micrograms are in 0.02 mg?,20 μg
+Convert 1.5 kg to grams.,"1,500 g"
+How many liters is 500 mL?,0.5 L
+Convert 10 mL to Liters.,0.01 L
+How many picograms are in 75 ng?,"75,000 pg"
+Convert 0.1 mL to μL.,100 μL
+I have a stock solution of 1000X ampicillin and I want to make 50 mL of media with 1X ampicillin. How much stock ampicillin should I add?,50 μL
+1000X ampicillin is 100 mg/mL. What is the concentration of 1X ampicillin in μg/μL?,0.1 μg/μL
+1000X ampicillin is 100 mg/mL. How many micrograms of ampicillin are in my 50 mL of media with 1X ampicillin?,"5,000 μg"
+You have 50X TAE buffer. How much stock do you need to make 1 L of 1X TAE?,20 mL
+"You have 10X PBS. To make 500 mL of 1X PBS, how much water do you add to the stock?",450 mL
+How much 20X SSC stock is needed to make 100 mL of 2X SSC?,10 mL
+"Your PCR buffer is 5X. If your final reaction volume is 50 μL, how much buffer do you add?",10 μL
+A restriction enzyme is 10X. You want a 20 μL reaction at 1X. How much enzyme stock do you use?,2 μL
+You have 100X BSA. How much do you add to a 1 mL total volume to reach 1X?,10 μL
+You have 400X loading dye. You want 400 μL of 1X dye. How much stock do you use?,1 μL
+You need 10 mL of 1X solution from a 500X stock. How many μL of stock is that?,20 μL
+"If you add 2 mL of 10X buffer to water to make 1X buffer, how much water do you need?",18 mL
+I have 100 mL of 10M NaOH. I’m making 1 mL aliquots. How many tubes should I label?,100 tubes
+I have 100 mL of 10M NaOH. I’m making 1 mL aliquots of 0.1M NaOH. How many can I make?,"10,000 tubes"
+The molecular weight of a salt is 100 g/mol. How many grams do you need for 1 L of a 1M solution?,100 g
+A compound has a MW of 200. How many grams are needed for 1 L of a 0.5M solution?,100 g
+You dilute 1M NaCl 1:10. What is the new molarity?,0.1M
+You have 5M NaCl and need 1M. What is your dilution factor?,1:5 (or 5 times)
+Convert 0.1M HCl to mM.,100 mM
+Convert 10 mM EDTA to μM.,"10,000 μM"
+MW of Substance X is 50 g/mol. You need 2M in 100 mL. How many grams do you weigh out?,10 g
+You have 1M Tris stock. You need 100 mL of 10 mM Tris. How much stock do you use?,1 mL
+You have 0.5M Glucose. You need 50 mL of 0.05M. How much stock do you use?,5 mL
+"To make 1 L of 0.2M KCl from a 2M stock, how much water is required?",900 mL
+"If 1M of a solute (MW=100) is in 1 L, how many mg/mL is that?",100 mg/mL
+I have DNA measured at 2000 ng/μL. My protocol says I need 40 μg of DNA. How many μL of DNA is that?,20 μL
+How many μg are in 50 μL of a 100 mg/mL solution?,"5,000 μg"
+"True story: I miniprepped a plasmid and got 100 μL at 2,800 ng/μL. How many mg of DNA is that?",0.28 mg
+Your DNA is at 500 ng/μL. You need 1 μg. How many μL do you pipet?,2 μL
+You have a protein stock at 10 mg/mL. You need 1 mg. How many μL is that?,100 μL
+A primer is at 1 μg/μL. You need 500 ng. How many μL do you need?,0.5 μL
+Your protein concentration is 5 mg/mL. Total volume is 2 mL. What is the total mass of protein?,10 mg
+There are 50 μg of DNA in 50 μL. What is the concentration in μg/μL?,1 μg/μL
+You dissolve 1 mg of powder in 1 mL. What is the concentration in μg/μL?,1 μg/μL
+DNA is at 20 ng/μL. You need 100 ng. How many μL do you use?,5 μL
+Protein is at 2 mg/mL. You need 10 μg. How many μL is that?,5 μL
+A stock is 0.5 mg/mL. You need 250 μg. How many μL is that?,500 μL
+I have a stock solution of apple juice diluted 1:10 from the store. I want 1 L of apple juice at a 1:1000 dilution ratio. How much water and how much stock should I use?,10 mL stock / 990 mL water
+"To make a 1:10 dilution, you add 1 mL of sample to how much diluent?",9 mL
+You performed a 1:5 dilution using 4 mL of diluent. What was your starting sample volume?,1 mL
+You perform three serial 1:10 dilutions. What is the final dilution factor?,"1:1,000"
+You perform four serial 1:2 dilutions. What is the final dilution factor?,1:16
+"To get a 1:100 dilution using 10 μL of sample, what is your final total volume?","1,000 μL (or 1 mL)"
+You need a 1:4 dilution with a total volume of 100 μL. How much sample do you use?,25 μL
+You add 10 μL of sample to 90 μL of buffer. What is the dilution ratio?,1:10
+"You dilute a sample 1:10, then dilute that result 1:10 again. What is the final ratio?",0.111111111
+"For a 1:20 dilution, if you use 1 mL of sample, what is the final volume?",20 mL
+You want a 1:50 dilution and need 50 mL total. How much sample do you add?,1 mL
+"For a 1:2 dilution, you have 100 μL of sample. How much diluent do you add?",100 μL
+A 1:1000 dilution is needed. You do a 1:10 followed by what dilution?,0.111111111
+I have cells at 2.0×10^6 cells/mL. I want to start a 12 mL culture at 1.0×10^5 cells/mL. How many μL of cells should I add? How much media?,600 μL cells / 11.4 mL media
+You count 50 cells in one large square of a hemocytometer (volume = 10^−4 mL). What is the concentration in cells/mL?,5×10^5 cells/mL
+Your stock is 10^6 cells/mL. You need 10^5 cells total. How many μL do you take?,100 μL
+You have 4×10^6 cells/mL. You dilute them 1:4. What is the new concentration?,1×10^6 cells/mL
+A flask has 10^7 cells/mL. You need 2×10^6 cells. What volume do you take?,200 μL
+Your culture is 2.5×10^5 cells/mL. Total volume is 10 mL. How many cells are in the flask?,2.5×10^6 cells
+You want 5×10^4 cells/mL in 5 mL. Your stock is 5×10^5 cells/mL. How much stock do you use?,500 μL
+You count 100 cells total across 4 hemocytometer squares. What is the average number of cells per square?,25 cells
+You add 1 mL of a 10^6 cells/mL suspension to 9 mL of media. What is the new concentration?,1×10^5 cells/mL
+"In a viability test, you count 90 white (live) cells and 10 blue (dead) cells. What is the percent viability?",90%
+You need 10^4 cells. Your stock is 10^5 cells/mL. What volume do you need?,100 μL
+You need 2×10^4 cells per well in a 10-well strip. How many total cells do you need?,2×10^5 cells
+"If you have 10^6 cells in 1 mL, how many cells are in 1 μL?","1,000 cells/μL (or 10^3)"
+I have a 1 L bottle of ABS and a 1 L bottle of FBS. I want to make 50 mL aliquots of a 1:1 mix. How many 50 mL tubes will I need to hold all of it?,40 tubes
+You have 500 mL of buffer and need to make 5 mL aliquots. How many tubes do you need?,100 tubes
+You have 10 mL of an enzyme. You make 20 μL aliquots. How many tubes do you get?,500 tubes
+You need 10 tubes of 1.5 mL master mix. What is the minimum total volume you should prepare?,15 mL
+You have 1 L of 70% Ethanol. How many 100 mL spray bottles can you fill?,10 bottles
+You have 250 mL of solution. You need 50 mL for each of 4 students. Do you have enough?,Yes
+You have 1 L of LB media. You want to fill 250 mL flasks halfway. How many flasks can you prepare?,8 flasks
+You have 500 μL of stock. Each reaction requires 50 μL. How many reactions can you run?,10 reactions
+"You are pouring 20 plates, and each takes 10 mL of agar. What is the total volume of agar needed?",200 mL
+A 48-well plate requires 1 mL per well. What is the total volume for the whole plate?,48 mL
+A 96-well plate requires 200 μL per well. What is the total volume in mL?,19.2 mL
+You have 5 samples to run in triplicate. How many total tubes do you need?,15 tubes
