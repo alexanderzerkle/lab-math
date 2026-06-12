@@ -1,9 +1,4 @@
-const problems = [
-  { question: "7 + 8", answer: 15 },
-  { question: "12 - 5", answer: 7 },
-  { question: "6 × 4", answer: 24 },
-  { question: "20 ÷ 5", answer: 4 }
-];
+let problems = [];
 
 let currentIndex = 0;
 let score = 0;
@@ -40,8 +35,29 @@ function showProblem() {
   answerEl.focus();
 }
 
+async function loadProblems() {
+  const response = await fetch("problems.csv");
+  const text = await response.text();
+
+  const lines = text.trim().split("\n");
+
+  problems = lines
+    .slice(1) // skip header row
+    .map(line => {
+      const [question, answer] = line.split(",");
+
+      return {
+        question: question.trim(),
+        answer: Number(answer.trim())
+      };
+    });
+
+  showProblem();
+}
+
 function checkAnswer() {
   if (gameOver) return;
+  if (problems.length === 0) return;
 
   const userAnswer = Number(answerEl.value);
   const correctAnswer = problems[currentIndex].answer;
@@ -55,7 +71,7 @@ function checkAnswer() {
 
   currentIndex++;
   scoreEl.textContent = `Score: ${score}`;
-  showProblem();
+  loadProblems();
 }
 
 function endGame(message) {
