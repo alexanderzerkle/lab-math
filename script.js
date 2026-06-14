@@ -112,4 +112,4 @@ const timerInterval = setInterval(function() {
   }
 }, 1000);
 
-showProblem();
+loadProblems();
