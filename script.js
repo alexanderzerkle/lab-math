@@ -53,7 +53,7 @@ async function loadProblems() {
     }
     
     const question = line.substring(0, lastCommaIndex).replace(/^"|"$/g, '').trim();
-    const answer = Number(line.substring(lastCommaIndex + 1).trim());
+    const answer = line.substring(lastCommaIndex + 1).replace(/^"|"$/g, '').trim();
 
     return { question, answer };
   });
@@ -65,7 +65,7 @@ function checkAnswer() {
   if (gameOver) return;
   if (problems.length === 0) return;
 
-  const userAnswer = Number(answerEl.value);
+  const userAnswer = answerEl.value.trim();
   const correctAnswer = problems[currentIndex].answer;
 
   if (userAnswer === correctAnswer) {
