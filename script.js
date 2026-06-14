@@ -167,13 +167,20 @@ function startTimer() {
 }
 
 function startGame() {
+  console.log("Start game clicked");
   startScreen.style.display = "none";
   gameScreen.style.display = "block";
   loadProblems();
 }
 
 submitBtn.addEventListener("click", checkAnswer);
-startBtn.addEventListener("click", startGame);
+
+if (startBtn) {
+  console.log("Start button found, adding event listener");
+  startBtn.addEventListener("click", startGame);
+} else {
+  console.error("Start button not found");
+}
 
 answerEl.addEventListener("keydown", function(event) {
   if (event.key === "Enter") {
