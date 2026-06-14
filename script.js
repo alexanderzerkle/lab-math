@@ -12,9 +12,11 @@ const scoreEl = document.getElementById("score");
 const timerEl = document.getElementById("timer");
 const feedbackEl = document.getElementById("feedback");
 const submitBtn = document.getElementById("submit");
+const startBtn = document.getElementById("startBtn");
+const startScreen = document.getElementById("startScreen");
+const gameScreen = document.getElementById("gameScreen");
 
 submitBtn.disabled = true;
-questionEl.textContent = "Loading problems...";
 
 function formatTime(seconds) {
   if (seconds > 59) {
@@ -164,12 +166,17 @@ function startTimer() {
   }, 1000);
 }
 
+function startGame() {
+  startScreen.style.display = "none";
+  gameScreen.style.display = "block";
+  loadProblems();
+}
+
 submitBtn.addEventListener("click", checkAnswer);
+startBtn.addEventListener("click", startGame);
 
 answerEl.addEventListener("keydown", function(event) {
   if (event.key === "Enter") {
     checkAnswer();
   }
 });
-
-loadProblems();
