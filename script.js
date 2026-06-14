@@ -12,9 +12,13 @@ const scoreEl = document.getElementById("score");
 const timerEl = document.getElementById("timer");
 const feedbackEl = document.getElementById("feedback");
 const submitBtn = document.getElementById("submit");
+const startBtn = document.getElementById("start");
 
 submitBtn.disabled = true;
-questionEl.textContent = "Loading problems...";
+answerEl.style.display = "none";
+submitBtn.style.display = "none";
+questionEl.textContent = "Press Start to begin.";
+timerEl.textContent = `Time: ${formatTime(timeLeft)}`;
 
 function formatTime(seconds) {
   if (seconds > 59) {
@@ -36,14 +40,12 @@ function normalizeAnswer(value) {
 }
 
 function parseCsv(text) {
-  // Remove UTF-8 BOM if present, normalize line endings, and ignore blank lines.
   const lines = text
     .replace(/^\uFEFF/, "")
     .replace(/\r\n/g, "\n")
     .split("\n")
     .filter(line => line.trim() !== "");
 
-  // Skip header row: question,answer
   return lines.slice(1).map(line => {
     const columns = [];
     let value = "";
@@ -90,6 +92,8 @@ function showProblem() {
 
 async function loadProblems() {
   try {
+    questionEl.textContent = "Loading problems...";
+
     const response = await fetch("problems.csv", { cache: "no-store" });
 
     if (!response.ok) {
@@ -114,6 +118,16 @@ async function loadProblems() {
     answerEl.disabled = true;
     console.error(error);
   }
+}
+
+async function startQuiz() {
+  startBtn.disabled = true;
+  startBtn.style.display = "none";
+
+  answerEl.style.display = "";
+  submitBtn.style.display = "";
+
+  await loadProblems();
 }
 
 function checkAnswer() {
@@ -164,6 +178,7 @@ function startTimer() {
   }, 1000);
 }
 
+startBtn.addEventListener("click", startQuiz);
 submitBtn.addEventListener("click", checkAnswer);
 
 answerEl.addEventListener("keydown", function(event) {
@@ -171,5 +186,3 @@ answerEl.addEventListener("keydown", function(event) {
     checkAnswer();
   }
 });
-
-loadProblems();
