@@ -7,21 +7,17 @@
 <body>
   <h1>Math Practice</h1>
 
+  <p id="timer">Time: 10m 0s</p>
+  <p id="score">Score: 0</p>
+
   <button id="start">Start Quiz</button>
 
   <h2 id="question"></h2>
 
-  <div id="gameScreen" style="display: none;">
-    <p id="timer">Time: 0s</p>
-    <p id="score">Score: 0</p>
+  <input id="answer" type="text" placeholder="Your answer" autocomplete="off">
+  <button id="submit">Submit</button>
 
-    <h2 id="question"></h2>
-
-<input id="answer" type="text" placeholder="Your answer" autocomplete="off" style="display:none;">
-<button id="submit" style="display:none;">Submit</button>
-
-    <p id="feedback"></p>
-  </div>
+  <p id="feedback"></p>
 
   <script src="script.js"></script>
 </body>
