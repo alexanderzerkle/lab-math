@@ -1,24 +1,37 @@
-let problems = [];
+const QUIZ_LENGTH_SECONDS = 10 * 60;
+const CORRECT_FEEDBACK_DURATION_MS = 1000;
+const INCORRECT_FEEDBACK_DURATION_MS = 2000;
 
+let problems = [];
 let currentIndex = 0;
 let score = 0;
-let timeLeft = 10 * 60; // 10 minutes in seconds
+let timeLeft = QUIZ_LENGTH_SECONDS;
 let gameOver = false;
+let isPaused = false;
 let timerInterval = null;
 let feedbackTimeout = null;
 let acceptingAnswer = false;
+let feedbackVersion = 0;
 
 const questionEl = document.getElementById("question");
+const quizAreaEl = document.getElementById("quiz-area");
 const answerAreaEl = document.getElementById("answer-area");
 const scoreEl = document.getElementById("score");
 const timerEl = document.getElementById("timer");
 const feedbackEl = document.getElementById("feedback");
 const submitBtn = document.getElementById("submit");
 const startBtn = document.getElementById("start");
+const pauseBtn = document.getElementById("pause");
+const giveUpBtn = document.getElementById("give-up");
+const sideControlsEl = document.querySelector(".side-controls");
 
 submitBtn.disabled = true;
+quizAreaEl.style.display = "block";
 answerAreaEl.style.display = "none";
 submitBtn.style.display = "none";
+sideControlsEl.style.display = "none";
+pauseBtn.disabled = true;
+giveUpBtn.disabled = true;
 questionEl.textContent = "Press Start to begin.";
 timerEl.textContent = `Time: ${formatTime(timeLeft)}`;
 
@@ -92,15 +105,13 @@ function parseCsv(text) {
   const rows = parseCsvRows(text);
 
   return rows.slice(1).map(columns => {
-    const problem = {
+    return {
       question: columns[0] ?? "",
       answer1: columns[1] ?? "",
       static1: columns[2] ?? "",
       answer2: columns[3] ?? "",
       static2: columns[4] ?? ""
     };
-
-    return problem;
   }).filter(problem => problem.question && problem.answer1);
 }
 
@@ -162,32 +173,41 @@ function clearFeedback() {
   feedbackEl.className = "";
 }
 
+function setFeedback(message, className) {
+  feedbackEl.textContent = message;
+  feedbackEl.className = className;
+}
+
+function clearPendingFeedbackTimeout() {
+  if (feedbackTimeout !== null) {
+    clearTimeout(feedbackTimeout);
+    feedbackTimeout = null;
+  }
+}
+
+function clearFeedbackAfterDelay(duration) {
+  clearPendingFeedbackTimeout();
+  const thisFeedbackVersion = ++feedbackVersion;
+
+  feedbackTimeout = setTimeout(function() {
+    feedbackTimeout = null;
+
+    if (!gameOver && !isPaused && thisFeedbackVersion === feedbackVersion) {
+      clearFeedback();
+    }
+  }, duration);
+}
+
 function setInputsDisabled(disabled) {
   answerAreaEl.querySelectorAll("input").forEach(input => {
     input.disabled = disabled;
   });
-  submitBtn.disabled = disabled || gameOver;
-}
 
-function showTemporaryFeedback(message, className, duration, afterFeedback) {
-  if (feedbackTimeout !== null) {
-    clearTimeout(feedbackTimeout);
-  }
-
-  acceptingAnswer = false;
-  setInputsDisabled(true);
-  feedbackEl.textContent = message;
-  feedbackEl.className = className;
-
-  feedbackTimeout = setTimeout(function() {
-    feedbackTimeout = null;
-    clearFeedback();
-    afterFeedback();
-  }, duration);
+  submitBtn.disabled = disabled || gameOver || isPaused;
 }
 
 function showProblem() {
-  if (gameOver) return;
+  if (gameOver || isPaused) return;
 
   if (currentIndex >= problems.length) {
     endGame("Done!");
@@ -196,7 +216,6 @@ function showProblem() {
 
   const problem = problems[currentIndex];
   questionEl.textContent = problem.question;
-  clearFeedback();
   renderAnswerArea(problem);
   acceptingAnswer = true;
   setInputsDisabled(false);
@@ -220,17 +239,19 @@ async function loadProblems() {
     }
 
     submitBtn.disabled = false;
+    pauseBtn.disabled = false;
+    giveUpBtn.disabled = false;
     acceptingAnswer = true;
     startTimer();
     showProblem();
   } catch (error) {
     gameOver = true;
     questionEl.textContent = "Could not load quiz problems.";
-    feedbackEl.textContent = error.message;
+    setFeedback(error.message, "incorrect-feedback");
     submitBtn.disabled = true;
-    answerAreaEl.querySelectorAll("input").forEach(input => {
-      input.disabled = true;
-    });
+    pauseBtn.disabled = true;
+    giveUpBtn.disabled = true;
+    setInputsDisabled(true);
     console.error(error);
   }
 }
@@ -238,7 +259,8 @@ async function loadProblems() {
 async function startQuiz() {
   startBtn.disabled = true;
   startBtn.style.display = "none";
-
+  sideControlsEl.style.display = "flex";
+  quizAreaEl.style.display = "block";
   answerAreaEl.style.display = "flex";
   submitBtn.style.display = "inline-block";
 
@@ -246,7 +268,7 @@ async function startQuiz() {
 }
 
 function checkAnswer() {
-  if (gameOver || problems.length === 0 || !acceptingAnswer) return;
+  if (gameOver || isPaused || problems.length === 0 || !acceptingAnswer) return;
 
   const problem = problems[currentIndex];
   const answer1Input = document.getElementById("answer1");
@@ -255,46 +277,59 @@ function checkAnswer() {
   const answer1Correct = normalizeAnswer(answer1Input?.value ?? "") === normalizeAnswer(problem.answer1);
   const answer2Correct = !problem.answer2 || normalizeAnswer(answer2Input?.value ?? "") === normalizeAnswer(problem.answer2);
 
-  let feedbackMessage = "";
-  let feedbackClass = "";
-  let feedbackDuration = 0;
-
   if (answer1Correct && answer2Correct) {
     score++;
-    feedbackMessage = "Correct";
-    feedbackClass = "correct-feedback";
-    feedbackDuration = 1000;
-  } else {
-    feedbackMessage = `Correct answer: ${getCorrectAnswerText(problem)}`;
-    feedbackClass = "incorrect-feedback";
-    feedbackDuration = 2000;
-  }
+    scoreEl.textContent = `Score: ${score}`;
+    setFeedback("Correct", "correct-feedback");
+    clearFeedbackAfterDelay(CORRECT_FEEDBACK_DURATION_MS);
 
-  scoreEl.textContent = `Score: ${score}`;
-
-  showTemporaryFeedback(feedbackMessage, feedbackClass, feedbackDuration, function() {
     currentIndex++;
     showProblem();
-  });
+    return;
+  }
+
+  acceptingAnswer = false;
+  setInputsDisabled(true);
+  setFeedback(`Correct answer: ${getCorrectAnswerText(problem)}`, "incorrect-feedback");
+  clearPendingFeedbackTimeout();
+
+  feedbackTimeout = setTimeout(function() {
+    feedbackTimeout = null;
+
+    if (gameOver) return;
+
+    clearFeedback();
+    currentIndex++;
+    showProblem();
+  }, INCORRECT_FEEDBACK_DURATION_MS);
+}
+
+function getElapsedSeconds() {
+  return QUIZ_LENGTH_SECONDS - timeLeft;
 }
 
 function endGame(message) {
   gameOver = true;
+  acceptingAnswer = false;
+  isPaused = false;
 
-  questionEl.textContent = message;
-  feedbackEl.className = "";
-  feedbackEl.textContent = `Final score: ${score}/${problems.length}`;
-  answerAreaEl.style.display = "none";
-  submitBtn.style.display = "none";
+  clearPendingFeedbackTimeout();
 
   if (timerInterval !== null) {
     clearInterval(timerInterval);
+    timerInterval = null;
   }
 
-  if (feedbackTimeout !== null) {
-    clearTimeout(feedbackTimeout);
-    feedbackTimeout = null;
-  }
+  const elapsedSeconds = getElapsedSeconds();
+
+  questionEl.textContent = message;
+  feedbackEl.className = "";
+  feedbackEl.innerHTML = `Final score: ${score}/${problems.length}<br>Time elapsed: ${formatTime(elapsedSeconds)}`;
+  answerAreaEl.style.display = "none";
+  submitBtn.style.display = "none";
+  sideControlsEl.style.display = "none";
+  pauseBtn.disabled = true;
+  giveUpBtn.disabled = true;
 }
 
 function startTimer() {
@@ -303,16 +338,69 @@ function startTimer() {
   timerEl.textContent = `Time: ${formatTime(timeLeft)}`;
 
   timerInterval = setInterval(function() {
+    if (gameOver || isPaused) return;
+
     timeLeft--;
 
     timerEl.textContent = `Time: ${formatTime(timeLeft)}`;
 
     if (timeLeft <= 0) {
+      timeLeft = 0;
       timerEl.textContent = "Time: 0s";
       endGame("Time's up!");
     }
   }, 1000);
 }
 
+function pauseQuiz() {
+  if (gameOver || isPaused) return;
+
+  isPaused = true;
+  acceptingAnswer = false;
+  pauseBtn.textContent = "Resume";
+  quizAreaEl.style.display = "none";
+  clearPendingFeedbackTimeout();
+  setFeedback("Paused", "paused-feedback");
+  setInputsDisabled(true);
+}
+
+function resumeQuiz() {
+  if (gameOver || !isPaused) return;
+
+  isPaused = false;
+  acceptingAnswer = true;
+  pauseBtn.textContent = "Pause";
+  quizAreaEl.style.display = "block";
+  answerAreaEl.style.display = "flex";
+  submitBtn.style.display = "inline-block";
+  clearFeedback();
+  setInputsDisabled(false);
+
+  const firstInput = answerAreaEl.querySelector("input");
+  if (firstInput) {
+    firstInput.focus();
+  }
+}
+
+function togglePause() {
+  if (isPaused) {
+    resumeQuiz();
+  } else {
+    pauseQuiz();
+  }
+}
+
+function giveUp() {
+  if (gameOver) return;
+
+  const confirmed = window.confirm("Are you sure you want to give up and end the quiz now?");
+
+  if (!confirmed) return;
+
+  endGame("Quiz ended.");
+}
+
 startBtn.addEventListener("click", startQuiz);
 submitBtn.addEventListener("click", checkAnswer);
+pauseBtn.addEventListener("click", togglePause);
+giveUpBtn.addEventListener("click", giveUp);

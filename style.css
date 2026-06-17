@@ -11,6 +11,41 @@ input, button {
   margin: 8px;
 }
 
+.app {
+  position: relative;
+}
+
+.side-controls {
+  position: fixed;
+  top: 80px;
+  right: 24px;
+  display: none;
+  flex-direction: column;
+  gap: 8px;
+  align-items: stretch;
+}
+
+.side-button {
+  min-width: 110px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  background-color: #eeeeee;
+}
+
+.side-button:hover {
+  background-color: #dddddd;
+}
+
+.danger-button {
+  background-color: #d9534f;
+  color: white;
+}
+
+.danger-button:hover {
+  background-color: #c9302c;
+}
+
 .answer-area {
   align-items: center;
   flex-wrap: wrap;
@@ -44,7 +79,6 @@ input, button {
   background-color: #45a049;
 }
 
-
 #feedback {
   min-height: 28px;
   font-size: 20px;
@@ -57,4 +91,17 @@ input, button {
 
 .incorrect-feedback {
   color: red;
+}
+
+.paused-feedback {
+  color: #555555;
+}
+
+@media (max-width: 900px) {
+  .side-controls {
+    position: static;
+    flex-direction: row;
+    justify-content: center;
+    margin-bottom: 16px;
+  }
 }
