@@ -235,7 +235,10 @@ async function loadProblems() {
   try {
     questionEl.textContent = "Loading problems...";
 
-    const response = await fetch("problems.csv", { cache: "no-store" });
+    const response = await fetch(
+  "https://docs.google.com/spreadsheets/d/e/2PACX-1vTIeqsCRe0S_KkEFktfQtjuYQtcE2yA1Jybwa1jaH1dl5GOqt5gDQCqa6i8gpyKQP3ugoJYZ63rUQzO/pub?output=csv",
+  { cache: "no-store" }
+);
 
     if (!response.ok) {
       throw new Error(`Could not load problems.csv (${response.status})`);
