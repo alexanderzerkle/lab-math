@@ -25,6 +25,7 @@ const startBtn = document.getElementById("start");
 const pauseBtn = document.getElementById("pause");
 const giveUpBtn = document.getElementById("give-up");
 const sideControlsEl = document.querySelector(".side-controls");
+const STATS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzCEfePscHkJmAglmJXKl1BcG7wpXvzfMRitu5JMcJ-jBSa4yZj2iEVXP4ZIc0DsSCbjA/exec";
 
 submitBtn.disabled = true;
 quizAreaEl.style.display = "block";
@@ -324,6 +325,19 @@ function getElapsedSeconds() {
   return QUIZ_LENGTH_SECONDS - timeLeft;
 }
 
+function saveStatsToGoogleSheet(stats) {
+  fetch(STATS_WEB_APP_URL, {
+    method: "POST",
+    mode: "no-cors",
+    headers: {
+      "Content-Type": "text/plain"
+    },
+    body: JSON.stringify(stats)
+  }).catch(error => {
+    console.error("Could not save stats:", error);
+  });
+}
+
 function endGame(message) {
   gameOver = true;
   acceptingAnswer = false;
@@ -340,6 +354,14 @@ function endGame(message) {
   const totalAttempted = getTotalAttempted();
   const accuracy = totalAttempted > 0 ? ((score / totalAttempted) * 100).toFixed(1) : "0.0";
   const secondsPerCorrect = score > 0 ? (elapsedSeconds / score).toFixed(1) : "N/A";
+
+  saveStatsToGoogleSheet({
+  totalCorrect: score,
+  totalAttempted: totalAttempted,
+  accuracy: `${accuracy}%`,
+  timeElapsed: formatTime(elapsedSeconds),
+  secondsPerCorrectAnswer: secondsPerCorrect
+});
 
   questionEl.textContent = message;
   feedbackEl.className = "";
