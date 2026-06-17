@@ -324,7 +324,7 @@ function endGame(message) {
 
   questionEl.textContent = message;
   feedbackEl.className = "";
-  feedbackEl.innerHTML = `Final score: ${score}/${problems.length}<br>Time elapsed: ${formatTime(elapsedSeconds)}`;
+  feedbackEl.innerHTML = `Final score: ${score}<br>Time elapsed: ${formatTime(elapsedSeconds)}`;
   answerAreaEl.style.display = "none";
   submitBtn.style.display = "none";
   sideControlsEl.style.display = "none";
