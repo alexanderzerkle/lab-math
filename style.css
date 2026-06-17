@@ -43,3 +43,18 @@ input, button {
 .start-button:hover {
   background-color: #45a049;
 }
+
+
+#feedback {
+  min-height: 28px;
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.correct-feedback {
+  color: green;
+}
+
+.incorrect-feedback {
+  color: red;
+}

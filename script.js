@@ -5,6 +5,8 @@ let score = 0;
 let timeLeft = 10 * 60; // 10 minutes in seconds
 let gameOver = false;
 let timerInterval = null;
+let feedbackTimeout = null;
+let acceptingAnswer = false;
 
 const questionEl = document.getElementById("question");
 const answerAreaEl = document.getElementById("answer-area");
@@ -149,21 +151,39 @@ function renderAnswerArea(problem) {
 }
 
 function getCorrectAnswerText(problem) {
-  let answerText = problem.answer1;
+  return [problem.answer1, problem.static1, problem.answer2, problem.static2]
+    .filter(part => part !== undefined && part !== null && String(part).trim() !== "")
+    .map(part => String(part).trim())
+    .join(" ");
+}
 
-  if (problem.static1) {
-    answerText += problem.static1;
+function clearFeedback() {
+  feedbackEl.textContent = "";
+  feedbackEl.className = "";
+}
+
+function setInputsDisabled(disabled) {
+  answerAreaEl.querySelectorAll("input").forEach(input => {
+    input.disabled = disabled;
+  });
+  submitBtn.disabled = disabled || gameOver;
+}
+
+function showTemporaryFeedback(message, className, duration, afterFeedback) {
+  if (feedbackTimeout !== null) {
+    clearTimeout(feedbackTimeout);
   }
 
-  if (problem.answer2) {
-    answerText += problem.answer2;
-  }
+  acceptingAnswer = false;
+  setInputsDisabled(true);
+  feedbackEl.textContent = message;
+  feedbackEl.className = className;
 
-  if (problem.static2) {
-    answerText += problem.static2;
-  }
-
-  return answerText;
+  feedbackTimeout = setTimeout(function() {
+    feedbackTimeout = null;
+    clearFeedback();
+    afterFeedback();
+  }, duration);
 }
 
 function showProblem() {
@@ -176,8 +196,10 @@ function showProblem() {
 
   const problem = problems[currentIndex];
   questionEl.textContent = problem.question;
-  feedbackEl.textContent = "";
+  clearFeedback();
   renderAnswerArea(problem);
+  acceptingAnswer = true;
+  setInputsDisabled(false);
 }
 
 async function loadProblems() {
@@ -198,6 +220,7 @@ async function loadProblems() {
     }
 
     submitBtn.disabled = false;
+    acceptingAnswer = true;
     startTimer();
     showProblem();
   } catch (error) {
@@ -223,7 +246,7 @@ async function startQuiz() {
 }
 
 function checkAnswer() {
-  if (gameOver || problems.length === 0) return;
+  if (gameOver || problems.length === 0 || !acceptingAnswer) return;
 
   const problem = problems[currentIndex];
   const answer1Input = document.getElementById("answer1");
@@ -232,28 +255,45 @@ function checkAnswer() {
   const answer1Correct = normalizeAnswer(answer1Input?.value ?? "") === normalizeAnswer(problem.answer1);
   const answer2Correct = !problem.answer2 || normalizeAnswer(answer2Input?.value ?? "") === normalizeAnswer(problem.answer2);
 
+  let feedbackMessage = "";
+  let feedbackClass = "";
+  let feedbackDuration = 0;
+
   if (answer1Correct && answer2Correct) {
     score++;
-    feedbackEl.textContent = "Correct!";
+    feedbackMessage = "Correct";
+    feedbackClass = "correct-feedback";
+    feedbackDuration = 1000;
   } else {
-    feedbackEl.textContent = `Wrong. Correct answer: ${getCorrectAnswerText(problem)}`;
+    feedbackMessage = `Correct answer: ${getCorrectAnswerText(problem)}`;
+    feedbackClass = "incorrect-feedback";
+    feedbackDuration = 2000;
   }
 
-  currentIndex++;
   scoreEl.textContent = `Score: ${score}`;
-  showProblem();
+
+  showTemporaryFeedback(feedbackMessage, feedbackClass, feedbackDuration, function() {
+    currentIndex++;
+    showProblem();
+  });
 }
 
 function endGame(message) {
   gameOver = true;
 
   questionEl.textContent = message;
+  feedbackEl.className = "";
   feedbackEl.textContent = `Final score: ${score}/${problems.length}`;
   answerAreaEl.style.display = "none";
   submitBtn.style.display = "none";
 
   if (timerInterval !== null) {
     clearInterval(timerInterval);
+  }
+
+  if (feedbackTimeout !== null) {
+    clearTimeout(feedbackTimeout);
+    feedbackTimeout = null;
   }
 }
 
