@@ -5,6 +5,7 @@ const INCORRECT_FEEDBACK_DURATION_MS = 2000;
 let problems = [];
 let currentIndex = 0;
 let score = 0;
+let incorrectAnswers = 0;
 let timeLeft = QUIZ_LENGTH_SECONDS;
 let gameOver = false;
 let isPaused = false;
@@ -34,6 +35,7 @@ pauseBtn.disabled = true;
 giveUpBtn.disabled = true;
 questionEl.textContent = "Press Start to begin.";
 timerEl.textContent = `Time: ${formatTime(timeLeft)}`;
+scoreEl.textContent = "Score: 0";
 
 function formatTime(seconds) {
   if (seconds > 59) {
@@ -168,6 +170,14 @@ function getCorrectAnswerText(problem) {
     .join(" ");
 }
 
+function getTotalAttempted() {
+  return score + incorrectAnswers;
+}
+
+function updateScoreDisplay() {
+  scoreEl.textContent = `Score: ${score}`;
+}
+
 function clearFeedback() {
   feedbackEl.textContent = "";
   feedbackEl.className = "";
@@ -279,7 +289,7 @@ function checkAnswer() {
 
   if (answer1Correct && answer2Correct) {
     score++;
-    scoreEl.textContent = `Score: ${score}`;
+    updateScoreDisplay();
     setFeedback("Correct", "correct-feedback");
     clearFeedbackAfterDelay(CORRECT_FEEDBACK_DURATION_MS);
 
@@ -287,6 +297,9 @@ function checkAnswer() {
     showProblem();
     return;
   }
+
+  incorrectAnswers++;
+  updateScoreDisplay();
 
   acceptingAnswer = false;
   setInputsDisabled(true);
@@ -321,10 +334,18 @@ function endGame(message) {
   }
 
   const elapsedSeconds = getElapsedSeconds();
+  const totalAttempted = getTotalAttempted();
+  const accuracy = totalAttempted > 0 ? ((score / totalAttempted) * 100).toFixed(1) : "0.0";
+  const secondsPerCorrect = score > 0 ? (elapsedSeconds / score).toFixed(1) : "N/A";
 
   questionEl.textContent = message;
   feedbackEl.className = "";
-  feedbackEl.innerHTML = `Final score: ${score}<br>Time elapsed: ${formatTime(elapsedSeconds)}`;
+  feedbackEl.innerHTML = `
+    Total correct: ${score}<br>
+    Total attempted: ${totalAttempted}<br>
+    Accuracy: ${accuracy}%<br>
+    Seconds per correct answer: ${secondsPerCorrect}
+  `;
   answerAreaEl.style.display = "none";
   submitBtn.style.display = "none";
   sideControlsEl.style.display = "none";
