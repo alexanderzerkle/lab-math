@@ -19,16 +19,19 @@
 
     <button id="start" class="start-button" type="button">Start Quiz</button>
 
-    <div id="quiz-area">
-      <p id="category" class="question-category"></p>
-      <h2 id="question"></h2>
+    <div id="quiz-area" class="quiz-layout">
+      <div id="cat-stage" class="cat-stage" aria-label="Quiz cat progress graphic"></div>
 
-      <div id="answer-area" class="answer-area" aria-label="Answer area"></div>
-      <button id="submit" type="button">Submit</button>
+      <section class="question-panel" aria-label="Question area">
+        <p id="question-category" class="question-category"></p>
+        <h2 id="question"></h2>
+
+        <div id="answer-area" class="answer-area" aria-label="Answer area"></div>
+        <button id="submit" type="button">Submit</button>
+      </section>
     </div>
 
-    <p id="feedback"></p>
-    <div id="report" class="quiz-report" style="display: none;"></div>
+    <div id="feedback"></div>
     <button id="try-again" class="start-button" type="button" style="display: none;">Try again</button>
   </main>
 
