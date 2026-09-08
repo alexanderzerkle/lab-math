@@ -42,7 +42,7 @@ function preloadNextCatLevel(level) {
   }
 }
 
-updateCatGraphic = function() {
+function updateCatGraphic() {
   const level = getCatLevel(score);
   const renderVersion = ++catRenderVersion;
   const assetPath = getCatAssetPath(level);
@@ -73,7 +73,7 @@ updateCatGraphic = function() {
   };
 
   image.src = assetPath;
-};
+}
 
 Object.keys(CAT_ASSET_FILES).forEach(level => {
   preloadCatAsset(Number(level));
