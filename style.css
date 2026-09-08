@@ -1,6 +1,6 @@
 body {
   font-family: Arial, sans-serif;
-  max-width: 650px;
+  max-width: 760px;
   margin: 60px auto;
   text-align: center;
 }
@@ -44,6 +44,13 @@ input, button {
 
 .danger-button:hover {
   background-color: #c9302c;
+}
+
+.question-category {
+  margin-bottom: 4px;
+  font-size: 16px;
+  font-weight: bold;
+  color: #666666;
 }
 
 .answer-area {
@@ -97,7 +104,50 @@ input, button {
   color: #555555;
 }
 
+.quiz-report {
+  margin: 24px auto;
+  text-align: left;
+}
+
+.quiz-report h2,
+.quiz-report h3 {
+  text-align: center;
+}
+
+.report-summary,
+.report-section {
+  margin: 18px 0;
+  padding: 16px;
+  border-radius: 8px;
+  background-color: #f7f7f7;
+}
+
+.report-summary p {
+  margin: 6px 0;
+}
+
+.report-list {
+  margin: 0;
+  padding-left: 24px;
+}
+
+.report-list li {
+  margin: 12px 0;
+  line-height: 1.4;
+}
+
+.report-detail {
+  display: block;
+  margin-top: 4px;
+  font-size: 15px;
+  color: #555555;
+}
+
 @media (max-width: 900px) {
+  body {
+    margin: 30px 16px;
+  }
+
   .side-controls {
     position: static;
     flex-direction: row;
