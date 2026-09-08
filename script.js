@@ -52,6 +52,7 @@ function formatTime(seconds) {
 function normalizeAnswer(value) {
   return String(value)
     .trim()
+    .replace(/,/g, "")
     .replace(/\s+/g, " ")
     .replace(/−/g, "-")
     .replace(/×/g, "x")
