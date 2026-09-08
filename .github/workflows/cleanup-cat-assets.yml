@@ -1,0 +1,150 @@
+name: Clean up cat assets
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/cleanup-cat-assets.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Verify uploaded PNG assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import struct
+
+          stems = [
+              "cat-0-sleeping",
+              "cat-5-one-eye",
+              "cat-10-awake",
+              "cat-15-labcoat",
+              "cat-20-glassware",
+              "cat-25-triumphant",
+              "cat-30-fire",
+          ]
+
+          for stem in stems:
+              path = Path("assets") / f"{stem}.png"
+              data = path.read_bytes()
+              if data[:8] != b"\x89PNG\r\n\x1a\n":
+                  raise RuntimeError(f"{path} is not a valid PNG file")
+              if data[12:16] != b"IHDR":
+                  raise RuntimeError(f"{path} is missing a PNG IHDR chunk")
+              width, height = struct.unpack(">II", data[16:24])
+              if width <= 0 or height <= 0:
+                  raise RuntimeError(f"{path} has invalid dimensions")
+              print(f"{path}: {width}x{height}, {len(data)} bytes")
+          PY
+
+      - name: Replace SVG renderer with direct PNG renderer
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          script = Path("script.js")
+          text = script.read_text(encoding="utf-8")
+
+          replacement = r'''function getCatAssetPath(level) {
+  if (level >= 30) return "assets/cat-30-fire.png";
+  if (level >= 25) return "assets/cat-25-triumphant.png";
+  if (level >= 20) return "assets/cat-20-glassware.png";
+  if (level >= 15) return "assets/cat-15-labcoat.png";
+  if (level >= 10) return "assets/cat-10-awake.png";
+  if (level >= 5) return "assets/cat-5-one-eye.png";
+  return "assets/cat-0-sleeping.png";
+}
+
+function updateCatGraphic() {
+  const level = getCatLevel(score);
+  const image = document.createElement("img");
+  image.className = "cat-progress-image";
+  image.alt = "";
+  image.setAttribute("aria-hidden", "true");
+  image.decoding = "async";
+
+  catStageEl.classList.remove("cat-ready");
+  catStageEl.classList.toggle("animated-fire", level >= 35);
+
+  image.addEventListener("load", function() {
+    catStageEl.classList.add("cat-ready");
+  }, { once: true });
+
+  image.addEventListener("error", function() {
+    catStageEl.classList.remove("cat-ready");
+    console.error(`Could not load cat artwork: ${image.src}`);
+  }, { once: true });
+
+  image.src = getCatAssetPath(level);
+  catStageEl.replaceChildren(image);
+}
+
+'''
+
+          pattern = r'function updateCatGraphic\(\) \{.*?(?=function createAnswerInput\()'
+          new_text, count = re.subn(pattern, replacement, text, count=1, flags=re.S)
+          if count != 1:
+              raise RuntimeError(f"Expected to replace one legacy cat renderer block, replaced {count}")
+
+          script.write_text(new_text, encoding="utf-8")
+
+          index = Path("index.html")
+          html = index.read_text(encoding="utf-8")
+          html = html.replace('  <script src="cat-progress.js"></script>\n', '')
+          index.write_text(html, encoding="utf-8")
+          PY
+
+      - name: Remove obsolete cat files
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f cat-progress.js
+          rm -f assets/*.webp assets/*.b64 assets/*.webp.b64
+          rm -f assets/.upload-probe tmp-probe.txt
+          rm -rf assets-src
+          rm -f .github/workflows/materialize-cat-assets.yml
+          rm -f .github/workflows/materialize-cat-assets-v2.yml
+          rm -f .github/workflows/restore-original-cat-pngs.yml
+          rm -f .github/workflows/cleanup-cat-assets.yml
+
+      - name: Verify simplified implementation
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check script.js
+          test ! -e cat-progress.js
+          ! grep -q 'cat-progress.js' index.html
+          ! grep -q 'buildCatSvg' script.js
+          ! grep -q '\.webp' script.js
+          ! grep -q '\.b64' script.js
+          test "$(find assets -maxdepth 1 -type f -name 'cat-*.png' | wc -l)" -eq 7
+          test -z "$(find assets -maxdepth 1 -type f \( -name '*.webp' -o -name '*.b64' \) -print -quit)"
+
+      - name: Commit cleanup
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No cleanup changes to commit."
+            exit 0
+          fi
+          git commit -m "Use uploaded PNG cat assets and remove obsolete pipeline [skip ci]"
+          git push
