@@ -1,11 +1,11 @@
 const CAT_ASSET_FILES = {
-  0: "assets/cat-0-sleeping.webp",
-  5: "assets/cat-5-one-eye.webp",
-  10: "assets/cat-10-awake.webp",
-  15: "assets/cat-15-labcoat.webp",
-  20: "assets/cat-20-glassware.webp",
-  25: "assets/cat-25-triumphant.webp",
-  30: "assets/cat-30-fire.webp"
+  0: "assets/cat-0-sleeping.png",
+  5: "assets/cat-5-one-eye.png",
+  10: "assets/cat-10-awake.png",
+  15: "assets/cat-15-labcoat.png",
+  20: "assets/cat-20-glassware.png",
+  25: "assets/cat-25-triumphant.png",
+  30: "assets/cat-30-fire.png"
 };
 
 const catAssetCache = new Map();
@@ -48,6 +48,7 @@ updateCatGraphic = function() {
   const assetPath = getCatAssetPath(level);
 
   catStageEl.classList.toggle("animated-fire", level >= 35);
+  catStageEl.classList.remove("cat-ready");
 
   const image = new Image();
   image.className = "cat-progress-image";
