@@ -13,13 +13,17 @@ let timerInterval = null;
 let feedbackTimeout = null;
 let acceptingAnswer = false;
 let feedbackVersion = 0;
+let questionResults = [];
+let attemptId = null;
 
 const questionEl = document.getElementById("question");
+const categoryEl = document.getElementById("category");
 const quizAreaEl = document.getElementById("quiz-area");
 const answerAreaEl = document.getElementById("answer-area");
 const scoreEl = document.getElementById("score");
 const timerEl = document.getElementById("timer");
 const feedbackEl = document.getElementById("feedback");
+const reportEl = document.getElementById("report");
 const submitBtn = document.getElementById("submit");
 const startBtn = document.getElementById("start");
 const tryAgainBtn = document.getElementById("try-again");
@@ -37,6 +41,7 @@ sideControlsEl.style.display = "none";
 pauseBtn.disabled = true;
 giveUpBtn.disabled = true;
 questionEl.textContent = "Press Start to begin.";
+categoryEl.textContent = "";
 timerEl.textContent = `Time: ${formatTime(timeLeft)}`;
 scoreEl.textContent = "Score: 0";
 
@@ -111,15 +116,34 @@ function parseCsvRows(text) {
 function parseCsv(text) {
   const rows = parseCsvRows(text);
 
-  return rows.slice(1).map(columns => {
-    return {
-      question: columns[0] ?? "",
-      answer1: columns[1] ?? "",
-      static1: columns[2] ?? "",
-      answer2: columns[3] ?? "",
-      static2: columns[4] ?? ""
-    };
-  }).filter(problem => problem.question && problem.answer1);
+  if (rows.length < 2) return [];
+
+  const headers = rows[0].map(header => header.trim().toLowerCase());
+  const indexOf = name => headers.indexOf(name.toLowerCase());
+
+  const indexes = {
+    questionId: indexOf("questionId"),
+    category: indexOf("category"),
+    question: indexOf("question"),
+    answer1: indexOf("answer1"),
+    static1: indexOf("static1"),
+    answer2: indexOf("answer2"),
+    static2: indexOf("static2")
+  };
+
+  if (indexes.questionId < 0 || indexes.category < 0 || indexes.question < 0 || indexes.answer1 < 0) {
+    throw new Error("Published problems sheet is missing questionId, category, question, or answer1 columns");
+  }
+
+  return rows.slice(1).map(columns => ({
+    questionId: columns[indexes.questionId] ?? "",
+    category: columns[indexes.category] ?? "Uncategorized",
+    question: columns[indexes.question] ?? "",
+    answer1: columns[indexes.answer1] ?? "",
+    static1: indexes.static1 >= 0 ? (columns[indexes.static1] ?? "") : "",
+    answer2: indexes.answer2 >= 0 ? (columns[indexes.answer2] ?? "") : "",
+    static2: indexes.static2 >= 0 ? (columns[indexes.static2] ?? "") : ""
+  })).filter(problem => problem.questionId && problem.question && problem.answer1);
 }
 
 function shuffleProblems(items) {
@@ -184,6 +208,13 @@ function getCorrectAnswerText(problem) {
     .join(" ");
 }
 
+function getUserAnswerText(problem, answer1Value, answer2Value) {
+  return [answer1Value, problem.static1, problem.answer2 ? answer2Value : "", problem.static2]
+    .filter(part => part !== undefined && part !== null && String(part).trim() !== "")
+    .map(part => String(part).trim())
+    .join(" ");
+}
+
 function getTotalAttempted() {
   return score + incorrectAnswers;
 }
@@ -234,11 +265,12 @@ function showProblem() {
   if (gameOver || isPaused) return;
 
   if (currentIndex >= problems.length) {
-    endGame("Done!");
+    endGame("Done!", "completed");
     return;
   }
 
   const problem = problems[currentIndex];
+  categoryEl.textContent = `Category: ${problem.category}`;
   questionEl.textContent = problem.question;
   renderAnswerArea(problem);
   acceptingAnswer = true;
@@ -248,11 +280,12 @@ function showProblem() {
 async function loadProblems() {
   try {
     questionEl.textContent = "Loading problems...";
+    categoryEl.textContent = "";
 
     const response = await fetch(
-  "https://docs.google.com/spreadsheets/d/e/2PACX-1vTIeqsCRe0S_KkEFktfQtjuYQtcE2yA1Jybwa1jaH1dl5GOqt5gDQCqa6i8gpyKQP3ugoJYZ63rUQzO/pub?output=csv",
-  { cache: "no-store" }
-);
+      "https://docs.google.com/spreadsheets/d/e/2PACX-1vTIeqsCRe0S_KkEFktfQtjuYQtcE2yA1Jybwa1jaH1dl5GOqt5gDQCqa6i8gpyKQP3ugoJYZ63rUQzO/pub?output=csv",
+      { cache: "no-store" }
+    );
 
     if (!response.ok) {
       throw new Error(`Could not load problems.csv (${response.status})`);
@@ -262,7 +295,7 @@ async function loadProblems() {
     problems = shuffleProblems(parseCsv(text));
 
     if (problems.length === 0) {
-      throw new Error("problems.csv did not contain any valid problems");
+      throw new Error("Published problems sheet did not contain any valid problems");
     }
 
     submitBtn.disabled = false;
@@ -273,6 +306,7 @@ async function loadProblems() {
     showProblem();
   } catch (error) {
     gameOver = true;
+    categoryEl.textContent = "";
     questionEl.textContent = "Could not load quiz problems.";
     setFeedback(error.message, "incorrect-feedback");
     submitBtn.disabled = true;
@@ -283,10 +317,22 @@ async function loadProblems() {
   }
 }
 
+function createAttemptId() {
+  if (window.crypto && typeof window.crypto.randomUUID === "function") {
+    return window.crypto.randomUUID();
+  }
+
+  return `attempt-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+}
+
 async function startQuiz() {
+  attemptId = createAttemptId();
+  questionResults = [];
   startBtn.disabled = true;
   startBtn.style.display = "none";
   tryAgainBtn.style.display = "none";
+  reportEl.style.display = "none";
+  reportEl.innerHTML = "";
   sideControlsEl.style.display = "flex";
   quizAreaEl.style.display = "block";
   answerAreaEl.style.display = "flex";
@@ -304,6 +350,8 @@ async function restartQuiz() {
   }
 
   problems = [];
+  questionResults = [];
+  attemptId = createAttemptId();
   currentIndex = 0;
   score = 0;
   incorrectAnswers = 0;
@@ -315,9 +363,14 @@ async function restartQuiz() {
 
   updateScoreDisplay();
   timerEl.textContent = `Time: ${formatTime(timeLeft)}`;
+  timerEl.style.visibility = "visible";
+  toggleTimerBtn.textContent = "Hide Timer";
   pauseBtn.textContent = "Pause";
+  categoryEl.textContent = "";
   clearFeedback();
   answerAreaEl.innerHTML = "";
+  reportEl.innerHTML = "";
+  reportEl.style.display = "none";
   tryAgainBtn.style.display = "none";
   sideControlsEl.style.display = "flex";
   quizAreaEl.style.display = "block";
@@ -333,11 +386,23 @@ function checkAnswer() {
   const problem = problems[currentIndex];
   const answer1Input = document.getElementById("answer1");
   const answer2Input = document.getElementById("answer2");
+  const answer1Value = answer1Input?.value ?? "";
+  const answer2Value = answer2Input?.value ?? "";
 
-  const answer1Correct = normalizeAnswer(answer1Input?.value ?? "") === normalizeAnswer(problem.answer1);
-  const answer2Correct = !problem.answer2 || normalizeAnswer(answer2Input?.value ?? "") === normalizeAnswer(problem.answer2);
+  const answer1Correct = normalizeAnswer(answer1Value) === normalizeAnswer(problem.answer1);
+  const answer2Correct = !problem.answer2 || normalizeAnswer(answer2Value) === normalizeAnswer(problem.answer2);
+  const isCorrect = answer1Correct && answer2Correct;
 
-  if (answer1Correct && answer2Correct) {
+  questionResults.push({
+    questionId: problem.questionId,
+    category: problem.category,
+    question: problem.question,
+    correct: isCorrect,
+    userAnswer: getUserAnswerText(problem, answer1Value, answer2Value),
+    correctAnswer: getCorrectAnswerText(problem)
+  });
+
+  if (isCorrect) {
     score++;
     updateScoreDisplay();
     setFeedback("Correct", "correct-feedback");
@@ -371,6 +436,28 @@ function getElapsedSeconds() {
   return QUIZ_LENGTH_SECONDS - timeLeft;
 }
 
+function getCategoryPerformance() {
+  const performance = {};
+
+  questionResults.forEach(result => {
+    const category = result.category || "Uncategorized";
+
+    if (!performance[category]) {
+      performance[category] = { category, correct: 0, attempted: 0, accuracy: 0 };
+    }
+
+    performance[category].attempted++;
+    if (result.correct) performance[category].correct++;
+  });
+
+  return Object.values(performance)
+    .map(item => ({
+      ...item,
+      accuracy: item.attempted > 0 ? Number(((item.correct / item.attempted) * 100).toFixed(1)) : 0
+    }))
+    .sort((a, b) => a.category.localeCompare(b.category));
+}
+
 function saveStatsToGoogleSheet(stats) {
   fetch(STATS_WEB_APP_URL, {
     method: "POST",
@@ -384,7 +471,86 @@ function saveStatsToGoogleSheet(stats) {
   });
 }
 
-function endGame(message) {
+function appendTextElement(parent, tagName, text, className) {
+  const element = document.createElement(tagName);
+  element.textContent = text;
+  if (className) element.className = className;
+  parent.appendChild(element);
+  return element;
+}
+
+function renderQuestionList(title, results, showCorrectAnswer) {
+  const section = document.createElement("section");
+  section.className = "report-section";
+  appendTextElement(section, "h3", title);
+
+  if (results.length === 0) {
+    appendTextElement(section, "p", "None");
+    return section;
+  }
+
+  const list = document.createElement("ol");
+  list.className = "report-list";
+
+  results.forEach(result => {
+    const item = document.createElement("li");
+    appendTextElement(item, "strong", `${result.questionId} — ${result.category}`);
+    appendTextElement(item, "span", result.question, "report-detail");
+    appendTextElement(item, "span", `Your answer: ${result.userAnswer || "(blank)"}`, "report-detail");
+
+    if (showCorrectAnswer) {
+      appendTextElement(item, "span", `Correct answer: ${result.correctAnswer}`, "report-detail");
+    }
+
+    list.appendChild(item);
+  });
+
+  section.appendChild(list);
+  return section;
+}
+
+function renderDetailedReport(message, elapsedSeconds, accuracy, secondsPerCorrect, categoryPerformance) {
+  reportEl.innerHTML = "";
+  reportEl.style.display = "block";
+
+  appendTextElement(reportEl, "h2", message);
+
+  const summary = document.createElement("section");
+  summary.className = "report-summary";
+  appendTextElement(summary, "p", `Total correct: ${score}`);
+  appendTextElement(summary, "p", `Total attempted: ${getTotalAttempted()}`);
+  appendTextElement(summary, "p", `Accuracy: ${accuracy}%`);
+  appendTextElement(summary, "p", `Time elapsed: ${formatTime(elapsedSeconds)}`);
+  appendTextElement(summary, "p", `Seconds per correct answer: ${secondsPerCorrect}`);
+  reportEl.appendChild(summary);
+
+  const categorySection = document.createElement("section");
+  categorySection.className = "report-section";
+  appendTextElement(categorySection, "h3", "Performance by category");
+
+  if (categoryPerformance.length === 0) {
+    appendTextElement(categorySection, "p", "No questions were attempted.");
+  } else {
+    const categoryList = document.createElement("ul");
+    categoryList.className = "report-list";
+    categoryPerformance.forEach(item => {
+      appendTextElement(
+        categoryList,
+        "li",
+        `${item.category}: ${item.correct}/${item.attempted} correct (${item.accuracy}%)`
+      );
+    });
+    categorySection.appendChild(categoryList);
+  }
+
+  reportEl.appendChild(categorySection);
+  reportEl.appendChild(renderQuestionList("Answered correctly", questionResults.filter(result => result.correct), false));
+  reportEl.appendChild(renderQuestionList("Answered incorrectly", questionResults.filter(result => !result.correct), true));
+}
+
+function endGame(message, endedBy = "unknown") {
+  if (gameOver) return;
+
   gameOver = true;
   acceptingAnswer = false;
   isPaused = false;
@@ -400,23 +566,28 @@ function endGame(message) {
   const totalAttempted = getTotalAttempted();
   const accuracy = totalAttempted > 0 ? ((score / totalAttempted) * 100).toFixed(1) : "0.0";
   const secondsPerCorrect = score > 0 ? (elapsedSeconds / score).toFixed(1) : "N/A";
+  const categoryPerformance = getCategoryPerformance();
 
   saveStatsToGoogleSheet({
+    attemptId,
+    endedBy,
     totalCorrect: score,
-    totalAttempted: totalAttempted,
+    totalAttempted,
     accuracy: `${accuracy}%`,
     timeElapsed: formatTime(elapsedSeconds),
-    secondsPerCorrectAnswer: secondsPerCorrect
+    elapsedSeconds,
+    secondsPerCorrectAnswer: secondsPerCorrect,
+    categoryPerformance,
+    questionResults
   });
 
-  questionEl.textContent = message;
+  categoryEl.textContent = "";
+  questionEl.textContent = "";
+  feedbackEl.textContent = "";
   feedbackEl.className = "";
-  feedbackEl.innerHTML = `
-    Total correct: ${score}<br>
-    Total attempted: ${totalAttempted}<br>
-    Accuracy: ${accuracy}%<br>
-    Seconds per correct answer: ${secondsPerCorrect}
-  `;
+  renderDetailedReport(message, elapsedSeconds, accuracy, secondsPerCorrect, categoryPerformance);
+
+  quizAreaEl.style.display = "none";
   answerAreaEl.style.display = "none";
   submitBtn.style.display = "none";
   sideControlsEl.style.display = "none";
@@ -434,13 +605,12 @@ function startTimer() {
     if (gameOver || isPaused) return;
 
     timeLeft--;
-
     timerEl.textContent = `Time: ${formatTime(timeLeft)}`;
 
     if (timeLeft <= 0) {
       timeLeft = 0;
       timerEl.textContent = "Time: 0s";
-      endGame("Time's up!");
+      endGame("Time's up!", "timeout");
     }
   }, 1000);
 }
@@ -476,9 +646,7 @@ function resumeQuiz() {
   setInputsDisabled(false);
 
   const firstInput = answerAreaEl.querySelector("input");
-  if (firstInput) {
-    firstInput.focus();
-  }
+  if (firstInput) firstInput.focus();
 }
 
 function togglePause() {
@@ -493,10 +661,9 @@ function giveUp() {
   if (gameOver) return;
 
   const confirmed = window.confirm("Are you sure you want to give up and end the quiz now?");
-
   if (!confirmed) return;
 
-  endGame("Quiz ended.");
+  endGame("Quiz ended.", "gave_up");
 }
 
 startBtn.addEventListener("click", startQuiz);
