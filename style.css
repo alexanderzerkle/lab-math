@@ -1,6 +1,6 @@
 body {
   font-family: Arial, sans-serif;
-  max-width: 760px;
+  max-width: 850px;
   margin: 60px auto;
   text-align: center;
 }
@@ -46,11 +46,38 @@ input, button {
   background-color: #c9302c;
 }
 
+.quiz-layout {
+  align-items: flex-start;
+  justify-content: center;
+  gap: 24px;
+  margin-top: 8px;
+}
+
+.cat-stage {
+  flex: 0 0 190px;
+  min-height: 190px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cat-stage svg {
+  width: 190px;
+  max-width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.question-panel {
+  flex: 1 1 420px;
+  min-width: 0;
+}
+
 .question-category {
-  margin-bottom: 4px;
-  font-size: 16px;
+  min-height: 24px;
+  margin: 0 0 4px;
   font-weight: bold;
-  color: #666666;
+  color: #555555;
 }
 
 .answer-area {
@@ -92,6 +119,39 @@ input, button {
   font-weight: bold;
 }
 
+.report {
+  max-width: 780px;
+  margin: 20px auto 0;
+  text-align: left;
+  font-size: 16px;
+  font-weight: normal;
+  line-height: 1.4;
+}
+
+.report h3 {
+  margin: 18px 0 8px;
+  text-align: center;
+}
+
+.report h4 {
+  margin: 14px 0 6px;
+}
+
+.report ul {
+  margin-top: 6px;
+  padding-left: 22px;
+}
+
+.report li {
+  margin-bottom: 8px;
+}
+
+.report .summary-lines {
+  text-align: center;
+  font-size: 18px;
+  font-weight: bold;
+}
+
 .correct-feedback {
   color: green;
 }
@@ -104,48 +164,49 @@ input, button {
   color: #555555;
 }
 
-.quiz-report {
-  margin: 24px auto;
-  text-align: left;
+.cat-flame {
+  transform-origin: center bottom;
 }
 
-.quiz-report h2,
-.quiz-report h3 {
-  text-align: center;
+.cat-stage.animated-fire .cat-flame-left {
+  animation: flameFlickerLeft 0.45s infinite alternate ease-in-out;
 }
 
-.report-summary,
-.report-section {
-  margin: 18px 0;
-  padding: 16px;
-  border-radius: 8px;
-  background-color: #f7f7f7;
+.cat-stage.animated-fire .cat-flame-right {
+  animation: flameFlickerRight 0.38s infinite alternate ease-in-out;
 }
 
-.report-summary p {
-  margin: 6px 0;
+.cat-stage.animated-fire .cat-flame-center {
+  animation: flamePulse 0.5s infinite alternate ease-in-out;
 }
 
-.report-list {
-  margin: 0;
-  padding-left: 24px;
+.cat-stage.animated-fire .cat-spark {
+  animation: sparkDance 0.8s infinite alternate ease-in-out;
 }
 
-.report-list li {
-  margin: 12px 0;
-  line-height: 1.4;
+@keyframes flameFlickerLeft {
+  from { transform: translateY(2px) scale(0.96) rotate(-2deg); opacity: 0.82; }
+  to { transform: translateY(-5px) scale(1.06) rotate(3deg); opacity: 1; }
 }
 
-.report-detail {
-  display: block;
-  margin-top: 4px;
-  font-size: 15px;
-  color: #555555;
+@keyframes flameFlickerRight {
+  from { transform: translateY(-2px) scale(1.02) rotate(3deg); opacity: 1; }
+  to { transform: translateY(5px) scale(0.94) rotate(-3deg); opacity: 0.78; }
+}
+
+@keyframes flamePulse {
+  from { transform: scaleY(0.95); opacity: 0.86; }
+  to { transform: scaleY(1.08); opacity: 1; }
+}
+
+@keyframes sparkDance {
+  from { transform: translateY(0); opacity: 0.55; }
+  to { transform: translateY(-8px); opacity: 1; }
 }
 
 @media (max-width: 900px) {
   body {
-    margin: 30px 16px;
+    max-width: 650px;
   }
 
   .side-controls {
@@ -153,5 +214,25 @@ input, button {
     flex-direction: row;
     justify-content: center;
     margin-bottom: 16px;
+  }
+}
+
+@media (max-width: 700px) {
+  .quiz-layout {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .cat-stage {
+    flex-basis: auto;
+    min-height: 150px;
+  }
+
+  .cat-stage svg {
+    width: 150px;
+  }
+
+  .question-panel {
+    width: 100%;
   }
 }
