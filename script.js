@@ -25,7 +25,7 @@ const startBtn = document.getElementById("start");
 const pauseBtn = document.getElementById("pause");
 const giveUpBtn = document.getElementById("give-up");
 const sideControlsEl = document.querySelector(".side-controls");
-const STATS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzCEfePscHkJmAglmJXKl1BcG7wpXvzfMRitu5JMcJ-jBSa4yZj2iEVXP4ZIc0DsSCbjA/exec";
+const STATS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbz3SgNm0MKBL9DWFPyGj_-l2fWCh-039_VnrE-pcJL8H9u9tp92teh6h92AK57TkIzGFA/exec";
 
 submitBtn.disabled = true;
 quizAreaEl.style.display = "block";
