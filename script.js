@@ -24,6 +24,7 @@ const submitBtn = document.getElementById("submit");
 const startBtn = document.getElementById("start");
 const tryAgainBtn = document.getElementById("try-again");
 const pauseBtn = document.getElementById("pause");
+const toggleTimerBtn = document.getElementById("toggle-timer");
 const giveUpBtn = document.getElementById("give-up");
 const sideControlsEl = document.querySelector(".side-controls");
 const STATS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbz3SgNm0MKBL9DWFPyGj_-l2fWCh-039_VnrE-pcJL8H9u9tp92teh6h92AK57TkIzGFA/exec";
@@ -444,6 +445,12 @@ function startTimer() {
   }, 1000);
 }
 
+function toggleTimerVisibility() {
+  const isHidden = timerEl.style.visibility === "hidden";
+  timerEl.style.visibility = isHidden ? "visible" : "hidden";
+  toggleTimerBtn.textContent = isHidden ? "Hide Timer" : "Show Timer";
+}
+
 function pauseQuiz() {
   if (gameOver || isPaused) return;
 
@@ -496,4 +503,5 @@ startBtn.addEventListener("click", startQuiz);
 tryAgainBtn.addEventListener("click", restartQuiz);
 submitBtn.addEventListener("click", checkAnswer);
 pauseBtn.addEventListener("click", togglePause);
+toggleTimerBtn.addEventListener("click", toggleTimerVisibility);
 giveUpBtn.addEventListener("click", giveUp);
