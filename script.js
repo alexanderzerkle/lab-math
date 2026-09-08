@@ -22,6 +22,7 @@ const timerEl = document.getElementById("timer");
 const feedbackEl = document.getElementById("feedback");
 const submitBtn = document.getElementById("submit");
 const startBtn = document.getElementById("start");
+const tryAgainBtn = document.getElementById("try-again");
 const pauseBtn = document.getElementById("pause");
 const giveUpBtn = document.getElementById("give-up");
 const sideControlsEl = document.querySelector(".side-controls");
@@ -116,6 +117,15 @@ function parseCsv(text) {
       static2: columns[4] ?? ""
     };
   }).filter(problem => problem.question && problem.answer1);
+}
+
+function shuffleProblems(items) {
+  for (let i = items.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [items[i], items[j]] = [items[j], items[i]];
+  }
+
+  return items;
 }
 
 function createAnswerInput(id, placeholder) {
@@ -246,7 +256,7 @@ async function loadProblems() {
     }
 
     const text = await response.text();
-    problems = parseCsv(text);
+    problems = shuffleProblems(parseCsv(text));
 
     if (problems.length === 0) {
       throw new Error("problems.csv did not contain any valid problems");
@@ -273,6 +283,39 @@ async function loadProblems() {
 async function startQuiz() {
   startBtn.disabled = true;
   startBtn.style.display = "none";
+  tryAgainBtn.style.display = "none";
+  sideControlsEl.style.display = "flex";
+  quizAreaEl.style.display = "block";
+  answerAreaEl.style.display = "flex";
+  submitBtn.style.display = "inline-block";
+
+  await loadProblems();
+}
+
+async function restartQuiz() {
+  clearPendingFeedbackTimeout();
+
+  if (timerInterval !== null) {
+    clearInterval(timerInterval);
+    timerInterval = null;
+  }
+
+  problems = [];
+  currentIndex = 0;
+  score = 0;
+  incorrectAnswers = 0;
+  timeLeft = QUIZ_LENGTH_SECONDS;
+  gameOver = false;
+  isPaused = false;
+  acceptingAnswer = false;
+  feedbackVersion++;
+
+  updateScoreDisplay();
+  timerEl.textContent = `Time: ${formatTime(timeLeft)}`;
+  pauseBtn.textContent = "Pause";
+  clearFeedback();
+  answerAreaEl.innerHTML = "";
+  tryAgainBtn.style.display = "none";
   sideControlsEl.style.display = "flex";
   quizAreaEl.style.display = "block";
   answerAreaEl.style.display = "flex";
@@ -356,12 +399,12 @@ function endGame(message) {
   const secondsPerCorrect = score > 0 ? (elapsedSeconds / score).toFixed(1) : "N/A";
 
   saveStatsToGoogleSheet({
-  totalCorrect: score,
-  totalAttempted: totalAttempted,
-  accuracy: `${accuracy}%`,
-  timeElapsed: formatTime(elapsedSeconds),
-  secondsPerCorrectAnswer: secondsPerCorrect
-});
+    totalCorrect: score,
+    totalAttempted: totalAttempted,
+    accuracy: `${accuracy}%`,
+    timeElapsed: formatTime(elapsedSeconds),
+    secondsPerCorrectAnswer: secondsPerCorrect
+  });
 
   questionEl.textContent = message;
   feedbackEl.className = "";
@@ -374,6 +417,7 @@ function endGame(message) {
   answerAreaEl.style.display = "none";
   submitBtn.style.display = "none";
   sideControlsEl.style.display = "none";
+  tryAgainBtn.style.display = "inline-block";
   pauseBtn.disabled = true;
   giveUpBtn.disabled = true;
 }
@@ -447,6 +491,7 @@ function giveUp() {
 }
 
 startBtn.addEventListener("click", startQuiz);
+tryAgainBtn.addEventListener("click", restartQuiz);
 submitBtn.addEventListener("click", checkAnswer);
 pauseBtn.addEventListener("click", togglePause);
 giveUpBtn.addEventListener("click", giveUp);
