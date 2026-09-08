@@ -53,6 +53,7 @@ function normalizeAnswer(value) {
   return String(value)
     .trim()
     .replace(/,/g, "")
+    .replace(/^(-?)0+\./, "$1.")
     .replace(/\s+/g, " ")
     .replace(/−/g, "-")
     .replace(/×/g, "x")
